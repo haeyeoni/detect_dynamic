@@ -277,17 +277,7 @@ public:
         
         std::cout<<"static: "<< staticCloudDS->size()<<" dynamic: "<< dynamicCloudDS->size()
                 <<" occ : "<< occCloud->size()<<" downsampled: "<<downsampled_cloud->size()<<std::endl;
-        sensor_msgs::PointCloud2 dynamic_ds_msg;    
-        pcl::toROSMsg(*dynamicCloudDS, dynamic_ds_msg);
-        dynamic_ds_msg.header = cloud_msg->header;
-
-        sensor_msgs::PointCloud2 static_ds_msg;    
-        pcl::toROSMsg(*staticCloudDS, static_ds_msg);
-        static_ds_msg.header = cloud_msg->header;
-
-        pubDynamicDS.publish(static_ds_msg);
-        pubStaticDS.publish(dynamic_ds_msg);
-
+        
         // reconstruct the dynamic pointcloud
 
         for (auto p = dynamicCloudDS->begin(); p != dynamicCloudDS->end(); p ++)
@@ -303,12 +293,25 @@ public:
             // retransform the cloud            
 
             pcl::transformPointCloud(*dynamicCloud, *dynamicCloud, trans_eigen.inverse()); 
+            pcl::transformPointCloud(*dynamicCloudDS, *dynamicCloudDS, trans_eigen.inverse()); 
+            pcl::transformPointCloud(*staticCloudDS, *staticCloudDS, trans_eigen.inverse()); 
             sensor_msgs::PointCloud2 dynamic_msg;    
             pcl::toROSMsg(*dynamicCloud, dynamic_msg);
             dynamic_msg.header = cloud_msg->header;
 
             pubDynamic.publish(dynamic_msg);
         }
+        sensor_msgs::PointCloud2 dynamic_ds_msg;    
+        pcl::toROSMsg(*dynamicCloudDS, dynamic_ds_msg);
+        dynamic_ds_msg.header = cloud_msg->header;
+
+        sensor_msgs::PointCloud2 static_ds_msg;    
+        pcl::toROSMsg(*staticCloudDS, static_ds_msg);
+        static_ds_msg.header = cloud_msg->header;
+
+        pubDynamicDS.publish(static_ds_msg);
+        pubStaticDS.publish(dynamic_ds_msg);
+
     }
 };
 
